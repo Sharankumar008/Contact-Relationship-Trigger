@@ -1,0 +1,26 @@
+trigger ContactRelationshipTrigger on Contact_Relationship__c (before update) {
+    Set<Id> IdSet = new Set<Id>();
+    
+    for(Contact_Relationship__c CRRecord : trigger.New )
+    {
+        IdSet.add(CRRecord.ownerId);
+    }
+    
+    Map<Id, String> CRmap = new Map<Id,String>();
+    List<user> userList =[SELECT Id, Name FROM user WHERE Id IN : IdSet];
+    for(user list_users : userList)
+    {
+        CRmap.put(list_users.Id, list_users.Name);
+    }
+    
+    if(userList != null && userList.size()>0)
+    {
+        for(Contact_Relationship__c record : trigger.New)
+        {
+            if(record.ownerId != null)
+            {
+                record.Contact_Relationship_Name__c = CRmap.get(record.ownerId);
+            }
+        }
+    }
+}
